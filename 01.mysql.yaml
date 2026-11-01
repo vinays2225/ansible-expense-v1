@@ -13,9 +13,11 @@
         enabled: yes
         state: started
 
+    # - name: set root password and create database
+    #   mysql_user:
+    #     name: root
+    #     password: "{{ mysql_root_password }}"
+    #     host_all: yes   
     - name: set root password and create database
-      mysql_user:
-        name: root
-        password: "{{ mysql_root_password }}"
-        host_all: yes         
+      command: mysql_secure_installation --set-root-pass "{{ mysql_root_password }}"      
   
