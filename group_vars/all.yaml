@@ -1,0 +1,35 @@
+domain_name: yanvisol.online 
+ami_id: ami-0055977a6e828a4f4
+app_name: "expense"
+instance_names: ["mysql", "backend",  "lb", "frontend","frontend1"]
+a_action: create
+ansible_user: ec2-user
+ansible_password: DevOps321
+mysql_host: mysql.yanvisol.online
+backend_host: backend.yanvisol.online
+frontend_host: frontend1.yanvisol.online
+frontend_host1: frontend1.yanvisol.online
+lb_host: lb.yanvisol.online
+
+
+
+sg_components:
+  - name: "mysql"
+    inbound_rules:
+      - { proto: "tcp", from_port: 3306, to_port: 3306, group_name: "expense-backend", rule_desc: "Allow MySQL from backend" }
+      
+  - name: "backend"
+    inbound_rules:    
+      - { proto: "tcp", from_port: 8080, to_port: 8080, group_name: "expense-frontend", rule_desc: "Allow MongoDB from frontend" }
+
+  - name: "frontend"
+    inbound_rules:
+      - { proto: "tcp", from_port: 80, to_port: 80, group_name: "expense-lb", rule_desc: "Allow MySQL from load balancer" }
+  - name: "frontend1"
+    inbound_rules:
+      - { proto: "tcp", from_port: 80, to_port: 80, group_name: "expense-lb", rule_desc: "Allow MySQL from load balancer" }
+          
+  - name: "lb"
+    inbound_rules:    
+      - { proto: "tcp", from_port: 80, to_port: 80, cidr_ip: 0.0.0.0/0, rule_desc: "Allow public from LB" }
+        

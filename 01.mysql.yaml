@@ -1,0 +1,21 @@
+- name: Configure Mysql Server
+  hosts: mysql
+  become: yes
+  tasks:
+    - name: Install Mysql Server
+      dnf:
+        name: mysql-server
+        state: present
+
+    - name: Enable and start Mysql service
+      systemd:
+        name: mysqld
+        enabled: yes
+        state: started
+
+    - name: set root password and create database
+      mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        host_all: yes         
+  

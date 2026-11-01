@@ -1,0 +1,66 @@
+- name: Configure frontend service
+  hosts: frontend
+  become: yes
+  tasks:
+    - name: disable nginx
+      command: dnf module disable nginx -y
+
+    - name: enable 1.2x 
+      command: dnf module enable nginx:1.26 -y
+
+    - name: install nginx
+      dnf:
+        name:
+        - nginx
+        state: present
+
+
+    - name: Copy expense service
+      template:
+        src: expense.conf.j2
+        dest: /etc/nginx/default.d/expense.conf       
+
+    - name: Delete and recreate html dir
+      block:
+        - name: Remove the Nginx HTML directory and all its contents
+          file:
+            path: /usr/share/nginx/html
+            state: absent
+          become: true
+
+        - name: Recreate the empty Nginx HTML directory
+          file:
+            path: /usr/share/nginx/html
+            state: directory
+            mode: '0755'
+            owner: root
+            group: root
+          become: true 
+
+    
+
+    - name: start and enable service
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+
+    - name: Download code
+      get_url:
+        url: https://raw.githubusercontent.com/daws-92s/expense-documentation/refs/heads/main/artifacts/expense-frontend-v5.tar.gz
+        dest: /tmp/expense-frontend-v5.tar.gz
+
+    - name: Unzip code
+      unarchive:
+        src: /tmp/expense-frontend-v5.tar.gz
+        dest: /usr/share/nginx/html
+        remote_src: yes #. if no ansible checking in his server location
+
+    
+    - name: restart service
+      service:
+        name: nginx
+        state: restarted  
+
+   

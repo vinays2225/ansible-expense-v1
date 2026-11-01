@@ -1,0 +1,3 @@
+mysql_root_password: ExpenseApp@1
+table_name: "transactions"
+db_name: "transactions"

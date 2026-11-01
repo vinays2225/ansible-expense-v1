@@ -1,0 +1,101 @@
+- name: Configure Backend Server
+  hosts: backend
+  become: yes
+  tasks:
+    - name: module disable nodejs
+      command: dnf module disable nodejs -y
+
+    - name: enable nodejs module 24
+      command: dnf module enable nodejs:24 -y
+
+    - name: install nodejs
+      dnf:
+        name: nodejs
+        state: present  
+
+    - name: create expense system user
+      user:
+        name: "{{ app_name }}"
+        state: present
+        create_home: no
+        home: /app
+        shell: /sbin/nologin
+        comment: "Expense System User"
+        system: yes
+
+    - name: Remove app dir
+      file: 
+        path: /app
+        state: absent 
+
+    - name: Remove old code dir
+      file:
+        path: /tmp/expense.tar.gz
+        state: absent
+
+    - name: create app dir
+      file:
+        path : /app
+        state: directory
+
+    - name: Download code
+      get_url:
+        url: https://raw.githubusercontent.com/daws-92s/expense-documentation/refs/heads/main/artifacts/expense-backend-v5.tar.gz
+        dest: /tmp/expense.tar.gz
+
+    - name: Unzip code
+      unarchive:
+        src: /tmp/expense.tar.gz
+        dest: /app
+        remote_src: yes
+
+
+    - name: Install dependencies
+      community.general.npm: 
+          path: /app
+
+    - name: Copy expense service
+      template:
+        src: expense.service.j2
+        dest: /etc/systemd/system/expense.service
+
+    - name: Demon reload service
+      systemd_service:
+        daemon_reload: true    
+
+    
+    - name: Install mysql client
+      dnf:
+        name:
+        - mysql
+        state: present
+
+
+
+    # - name: Execute row count query
+    #   community.mysql.mysql_query:
+    #     login_user: "root"
+    #     login_password: "{{ mysql_root_password }}"
+    #     login_host: "{{ mysql_host }}"
+    #     login_db: "{{ db_name }}"
+    #     query: "SELECT COUNT(*) AS total FROM {{ table_name }}"
+    #   register: query_result
+
+    # - name: Display the data count
+    #   ansible.builtin.debug:
+    #     msg: "The total row count in '{{ table_name }}' is: {{ query_result.query_result[0][0].total }}" 
+
+
+
+    - name: Load master-data 
+      shell: mysql -h {{mysql_host}} -uroot -p{{mysql_root_password}} < /app/db/backend.sql           
+      # when: query_result.query_result[0][0].total | int == 0
+
+
+    - name: Start expense service
+      systemd:                            
+        name: expense
+        enabled: yes
+        state: restarted 
+     
+     

@@ -1,0 +1,43 @@
+- name: Create Security Groups
+  hosts: local
+  connection:  local
+  tasks:
+    - name: create security groups
+      amazon.aws.ec2_security_group:
+        name: "{{ app_name }}-{{ item.name }}"
+        description: "Used for allow {{ item.name }} to aother servers."
+        region: "us-east-1" 
+      loop: "{{ sg_components }}"
+      when: a_action == "create"
+
+  #Get all SG info
+    - name: Get  security groups
+      amazon.aws.ec2_security_group_info:
+        filters:
+          group-name: "{{app_name}}-mysql"
+      register: item_vpc_id    
+
+    # - name: Display result of SG
+    #   debug:
+    #     msg: " SG: {{ item_vpc_id }}"   
+
+    - name: add or update ingress rules
+      amazon.aws.ec2_security_group:
+        name: "{{ app_name }}-{{ item.name }}"
+        description: "Applying secure group ingress layout"
+        region: "us-east-1"
+        rules: "{{ item.inbound_rules }}" 
+      loop: "{{ sg_components }}"     
+      when: a_action == "create"
+      # Get all SG info
+    # - name: Get All security groups
+    #   amazon.aws.ec2_security_group_info:
+    #   register: all_sg_group_out 
+
+    - name: "Delete group by its id"
+      amazon.aws.ec2_security_group:
+        group_id: "{{item}}"
+        state: absent
+      loop:
+      - "sg-0f0ac6e1832b1447b"
+      when: a_action == "delete" 
