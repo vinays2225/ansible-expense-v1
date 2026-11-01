@@ -88,7 +88,7 @@
 
 
     - name: Load master-data 
-      shell: mysql -h {{mysql_host}} -uroot -p{{mysql_root_password}} < /app/db/backend.sql           
+      shell: mysql -h {{mysql_host}} -uroot -p{{mysql_root_password}} < /app/schema/backend.sql           
       # when: query_result.query_result[0][0].total | int == 0
 
 
