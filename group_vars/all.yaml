@@ -10,7 +10,9 @@ backend_host: backend.yanvisol.online
 frontend_host: frontend1.yanvisol.online
 frontend_host1: frontend1.yanvisol.online
 lb_host: lb.yanvisol.online
-
+mysql_root_password: ExpenseApp@1
+table_name: "transactions"
+db_name: "transactions"
 
 
 sg_components:
